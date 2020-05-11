@@ -25,4 +25,6 @@ data:
     # Modifying the UMASK
     echo "Modify UMASK on /home directory"
     chroot "${ROOT_MOUNT_DIR}" sed -i "s/^UMASK.*/UMASK  027/g" /etc/login.defs
+    chroot "${ROOT_MOUNT_DIR}" sed -i "s/^umask.*/umask  027/g" /etc/profile
+    chroot "${ROOT_MOUNT_DIR}" source /etc/profile
     chroot "${ROOT_MOUNT_DIR}" grep -wns "UMASK  027" /etc/login.defs -A 2

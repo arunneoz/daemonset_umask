@@ -1,5 +1,3 @@
-#!/bin/sh
-
 # Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-NODE_NAME="$1"
-ZONE="$2"
-
-echo "Verifying $NODE_NAME ($ZONE) configuration"
-
-if gcloud compute ssh "$NODE_NAME" --zone "$ZONE" --command "ls -ltr /home" > /dev/null 2>&1; then
-    echo "Disk configured successfully on $NODE_NAME ($ZONE)"
-else
-    echo "Disk not configured successfully on $NODE_NAME ($ZONE)"
-    exit 1
-fi
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: entrypoint
+  labels:
+    app: default-init
+data:
+  entrypoint.sh: |
+    #!/usr/bin/env bash
+    ROOT_MOUNT_DIR="${ROOT_MOUNT_DIR:-/root}"
+    # Modifying the UMASK
+    echo "Modify UMASK on /home directory"
+    chroot "${ROOT_MOUNT_DIR}" sed -i "s/^UMASK.*/UMASK  027/g" /etc/login.defs
+    chroot "${ROOT_MOUNT_DIR}" grep -wns "UMASK  027" /etc/login.defs -A 2
